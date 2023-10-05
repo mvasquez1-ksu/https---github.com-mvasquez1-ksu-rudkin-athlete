@@ -35,42 +35,56 @@ export default function Form() {
   const athleteAddress = watch("athleteAddress", "");
   const matchAthleteAddress = watch("matchAthleteAddress", false);
   const packageLevel = watch("package", "level 1");
+  const [page, setPage] = useState(0);
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     if (page == 0) {
       setPage(1);
     } else {
       const emailContent = `
-      <p><strong>Athlete Information:</strong></p>
       <p>Name: ${data.athleteName}</p>
       <p>Email: ${data.athleteEmail}</p>
       <p>Phone: ${data.athletePhone}</p>
       <p>Address: ${data.athleteAddress}</p>
-      <p><strong>Parent Information:</strong></p>
       <p>Name: ${data.parentName}</p>
       <p>Email: ${data.parentEmail}</p>
       <p>Phone: ${data.parentPhone}</p>
       <p>Address: ${data.parentAddress}</p>
-      <p><strong>Sport Information:</strong></p>
       <p>Sport: ${data.sport}</p>
       <p>Package: ${data.package}</p>
+      <p>High School: ${data.highSchool ?? data.highSchool}</p>
+      <p>Class Of: ${data.classOf ?? data.classOf}</p>
+      <p>Position: ${data.position ?? data.position}</p>
+      <p>Events: ${data.events ?? data.events}</p>
+      <p>Years Played: ${data.yearsPlayed ?? data.yearsPlayed}</p>
+      <p>Academic Achievements: ${
+        data.academicAchievements ?? data.academicAchievements
+      }</p>
+      <p>GPA: ${data.gpa ?? data.gpa}</p>
+      <p>Class Rank: ${data.classRank ?? data.classRank}</p>
       `;
+      const formData = new FormData();
+      formData.append("html", emailContent);
+      if (data.photos) {
+        for (let i = 0; i < data.photos.length; i++) {
+          formData.append("photos", data.photos[i]);
+        }
+      }
       axios
-        .post("/send-email", {
-          html: emailContent,
-          attachments: data.photos,
-        })
+        .post("/send-email", formData)
         .then((response) => console.log(response))
         .catch((error) => console.log(error));
     }
-    console.log(data);
   };
-  const [page, setPage] = useState(0);
 
   return (
     /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
     <div className="container">
       {page === 0 && (
-        <form onSubmit={handleSubmit(onSubmit)} className="form-inline">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="form-inline"
+          encType="multipart/form-data"
+        >
           {/* register your input into the hook by invoking the "register" function */}
           <div className="mb-3">
             <label htmlFor="a_nameInput" className="form-label">
@@ -298,7 +312,7 @@ export default function Form() {
             <input
               className="form-control"
               id="yearsPlayedInput"
-              {...register("classOf")}
+              {...register("yearsPlayed")}
             />
           </div>
           <div className="mb-3">
