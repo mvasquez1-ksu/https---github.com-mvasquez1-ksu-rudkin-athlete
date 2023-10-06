@@ -35,35 +35,17 @@ export default function Form() {
   const athleteAddress = watch("athleteAddress", "");
   const matchAthleteAddress = watch("matchAthleteAddress", false);
   const packageLevel = watch("package", "level 1");
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     if (page == 0) {
       setPage(1);
     } else {
-      const emailContent = `
-      <p>Name: ${data.athleteName}</p>
-      <p>Email: ${data.athleteEmail}</p>
-      <p>Phone: ${data.athletePhone}</p>
-      <p>Address: ${data.athleteAddress}</p>
-      <p>Name: ${data.parentName}</p>
-      <p>Email: ${data.parentEmail}</p>
-      <p>Phone: ${data.parentPhone}</p>
-      <p>Address: ${data.parentAddress}</p>
-      <p>Sport: ${data.sport}</p>
-      <p>Package: ${data.package}</p>
-      <p>High School: ${data.highSchool ?? data.highSchool}</p>
-      <p>Class Of: ${data.classOf ?? data.classOf}</p>
-      <p>Position: ${data.position ?? data.position}</p>
-      <p>Events: ${data.events ?? data.events}</p>
-      <p>Years Played: ${data.yearsPlayed ?? data.yearsPlayed}</p>
-      <p>Academic Achievements: ${
-        data.academicAchievements ?? data.academicAchievements
-      }</p>
-      <p>GPA: ${data.gpa ?? data.gpa}</p>
-      <p>Class Rank: ${data.classRank ?? data.classRank}</p>
-      `;
       const formData = new FormData();
-      formData.append("html", emailContent);
+      Object.entries(data).forEach(([key, value]) => {
+        if (!(value instanceof FileList)) {
+          formData.append(key, value.toString());
+        }
+      });
       if (data.photos) {
         for (let i = 0; i < data.photos.length; i++) {
           formData.append("photos", data.photos[i]);

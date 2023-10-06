@@ -1,4 +1,5 @@
 import { Express, Request } from "express";
+import * as FormData from "form-data";
 require("dotenv").config();
 const fs = require("fs");
 const express = require("express");
@@ -38,15 +39,33 @@ app.get("/api", (req, res) => {
 });
 
 app.post("/send-email", upload.array("photos", 15), (req, res) => {
-  const { html } = req.body;
-  console.log(req.body);
+  const formData = req.body;
   console.log((req as any).files);
-  console.log(html);
+  const emailContent = `
+    <p>Name: ${formData.athleteName}</p>
+    <p>Email: ${formData.athleteEmail}</p>
+    <p>Phone: ${formData.athletePhone}</p>
+    <p>Address: ${formData.athleteAddress}</p>
+    <p>Name: ${formData.parentName}</p>
+    <p>Email: ${formData.parentEmail}</p>
+    <p>Phone: ${formData.parentPhone}</p>
+    <p>Address: ${formData.parentAddress}</p>
+    <p>Sport: ${formData.sport}</p>
+    <p>Package: ${formData.package}</p>
+    <p>High School: ${formData.highSchool ?? ""}</p>
+    <p>Class Of: ${formData.classOf ?? ""}</p>
+    <p>Position: ${formData.position ?? ""}</p>
+    <p>Events: ${formData.events ?? ""}</p>
+    <p>Years Played: ${formData.yearsPlayed ?? ""}</p>
+    <p>Academic Achievements: ${formData.academicAchievements ?? ""}</p>
+    <p>GPA: ${formData.gpa ?? ""}</p>
+    <p>Class Rank: ${formData.classRank ?? ""}</p>
+  `;
   const mailOptions = {
     from: process.env.MAIL_USERNAME,
     to: process.env.MAIL_RECIPIENT,
     subject: "Athlete Profile Submission",
-    html: html,
+    html: emailContent,
     attachments: (req as any).files,
   };
 
