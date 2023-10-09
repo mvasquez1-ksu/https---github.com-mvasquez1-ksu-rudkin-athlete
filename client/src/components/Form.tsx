@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import axios from "axios";
+import { Elements } from "@stripe/react-stripe-js";
 
 type Inputs = {
   athleteName: string;
@@ -13,7 +14,7 @@ type Inputs = {
   parentAddress: string;
   matchAthleteAddress: boolean;
   sport: string;
-  package: string;
+  package: number;
   highSchool?: string;
   classOf?: string;
   position?: string;
@@ -25,6 +26,13 @@ type Inputs = {
   photos?: File[];
 };
 
+type Product = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+};
+
 export default function Form() {
   const {
     register,
@@ -34,8 +42,18 @@ export default function Form() {
   } = useForm<Inputs>();
   const athleteAddress = watch("athleteAddress", "");
   const matchAthleteAddress = watch("matchAthleteAddress", false);
-  const packageLevel = watch("package", "level 1");
-  const [page, setPage] = useState(1);
+  const packageLevel = watch("package", 1);
+  const [page, setPage] = useState(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    axios.get("/products").then((res) => {
+      const productArray = Object.keys(res.data).map((key) => ({
+        id: key,
+        ...res.data[key],
+      }));
+      setProducts(productArray);
+    });
+  }, []);
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     if (page == 0) {
       setPage(1);
@@ -198,7 +216,21 @@ export default function Form() {
           <fieldset className="row mb-3">
             <legend className="col-form-label col-sm-2 pt-0">Package</legend>
             <div className="col-sm-10">
-              <div className="form-check">
+              {products.map((product) => (
+                <div className="form-check" key={product.id}>
+                  <input
+                    className="form-check-input"
+                    type="radio"
+                    {...register("package", { required: true })}
+                    id={`gridRadios${product.id}`}
+                    value={product.id}
+                  />
+                  <label className="form-check-label" htmlFor="gridRadios3">
+                    {product.description}
+                  </label>
+                </div>
+              ))}
+              {/*               <div className="form-check">
                 <input
                   className="form-check-input"
                   type="radio"
@@ -222,7 +254,7 @@ export default function Form() {
                   Level 2 $995 - Flyer and One-page Website w/subdomain
                 </label>
               </div>
-              <div className="form-check disabled">
+              <div className="form-check">
                 <input
                   className="form-check-input"
                   type="radio"
@@ -234,7 +266,7 @@ export default function Form() {
                   Level 3 $1499 - Flyer and One-page Website w/custom domain (+
                   cost of domain)
                 </label>
-              </div>
+              </div> */}
             </div>
           </fieldset>
           <button type="submit" className="btn btn-primary">
@@ -332,8 +364,7 @@ export default function Form() {
               Upload photos:
             </label>
             <div id="photoUploadHelp" className="form-text">
-              Up to {packageLevel == "level 1" ? "5" : "15"} photos can be
-              uploaded.
+              Up to {packageLevel == 1 ? "5" : "15"} photos can be uploaded.
             </div>
             <input
               className="form-control"
@@ -344,6 +375,7 @@ export default function Form() {
               {...register("photos")}
             />
           </div>
+
           <button type="submit" className="btn btn-primary">
             Pay Now
           </button>

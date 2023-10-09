@@ -19,6 +19,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const nodemailer = require("nodemailer");
 const cors = require("cors");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const app: Express = express();
 const port = 4000;
 const transporter = nodemailer.createTransport({
@@ -34,8 +35,13 @@ const transporter = nodemailer.createTransport({
 app.use(cors());
 app.use(express.json());
 
-app.get("/api", (req, res) => {
-  res.json({ packages: ["level 1", "level 2", "level 3"] });
+app.get("/products", (req, res) => {
+  fs.readFile("./data/products.json", "utf8", (err: any, data: any) => {
+    if (err) {
+      throw err;
+    }
+    res.send(JSON.parse(data));
+  });
 });
 
 app.post("/send-email", upload.array("photos", 15), (req, res) => {
@@ -90,6 +96,29 @@ app.post("/send-email", upload.array("photos", 15), (req, res) => {
       fs.unlink(file.path, resultHandler);
     });
   });
+});
+
+app.post("/create-checkout-session", async (req, res) => {
+  const { product } = req.body;
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ["card"],
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: product.name,
+          },
+          unit_amount: product.price * 100,
+        },
+        quantity: product.quantity,
+      },
+    ],
+    mode: "payment",
+    success_url: `http://localhost:${port}/success`,
+    cancel_url: `http://localhost:${port}/cancel`,
+  });
+  res.json({ id: session.id });
 });
 
 app.listen(port, () => {
