@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import axios from "axios";
-import { Elements } from "@stripe/react-stripe-js";
 
 type Inputs = {
   athleteName: string;
@@ -58,21 +57,40 @@ export default function Form() {
     if (page == 0) {
       setPage(1);
     } else {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (!(value instanceof FileList)) {
-          formData.append(key, value.toString());
-        }
-      });
-      if (data.photos) {
-        for (let i = 0; i < data.photos.length; i++) {
-          formData.append("photos", data.photos[i]);
-        }
-      }
+      console.log(products[packageLevel]);
       axios
+        .post("/create-checkout-session", products[data.package])
+        .then((res) => {
+          console.log(res.data.sessionID);
+          if (res.data.checkoutURL) {
+            window.open(res.data.checkoutURL);
+          }
+          if (res.data.sessionID) {
+            const formData = new FormData();
+            formData.append("sessionID", res.data.sessionID);
+            Object.entries(data).forEach(([key, value]) => {
+              if (!(value instanceof FileList)) {
+                formData.append(key, value.toString());
+              }
+            });
+            if (data.photos) {
+              for (let i = 0; i < data.photos.length; i++) {
+                formData.append("photos", data.photos[i]);
+              }
+            }
+            axios
+              .post("/submit-form", formData)
+              .catch((error) => console.log(error));
+          } else {
+            console.error(
+              "Error: unable to obtain checkout session ID. Please try again."
+            );
+          }
+        });
+      /*       axios
         .post("/send-email", formData)
         .then((response) => console.log(response))
-        .catch((error) => console.log(error));
+        .catch((error) => console.log(error));  */
     }
   };
 
