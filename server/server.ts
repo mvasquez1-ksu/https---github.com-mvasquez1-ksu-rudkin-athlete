@@ -16,7 +16,8 @@ const storage = multer.diskStorage({
   filename: (req: any, file: any, cb: any) => {
     cb(
       null,
-      file.fieldname + "-" + Date.now() + "." + mime.extension(file.mimetype)
+      file.fieldname + "-" + Date.now() + "." + mime.extension(file.mimetype) ||
+        "txt"
     );
   },
 });
@@ -114,9 +115,17 @@ app.use(express.json());
 app.get("/products", (req, res) => {
   fs.readFile("./data/products.json", "utf8", (err: any, data: any) => {
     if (err) {
-      throw err;
+      console.error(err);
+      res.status(500).send("Error reading products file");
+    } else {
+      try {
+        const products = JSON.parse(data);
+        res.send(products);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send("Error parsing products data");
+      }
     }
-    res.send(JSON.parse(data));
   });
 });
 
