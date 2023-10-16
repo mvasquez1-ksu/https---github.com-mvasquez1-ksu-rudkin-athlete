@@ -11,9 +11,12 @@ type Inputs = {
   parentEmail: string;
   parentPhone: string;
   parentAddress: string;
-  matchAthleteAddress: boolean;
   sport: string;
   package: number;
+  age?: string;
+  height?: string;
+  weight?: string;
+  gender?: string;
   highSchool?: string;
   classOf?: string;
   position?: string;
@@ -36,12 +39,13 @@ export default function Form() {
   const {
     register,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors },
   } = useForm<Inputs>();
   const athleteAddress = watch("athleteAddress", "");
-  const matchAthleteAddress = watch("matchAthleteAddress", false);
-  const packageLevel = watch("package", 1);
+  const [matchAthleteAddress, setMatchAthleteAddress] = useState(false);
+  const packageLevel = watch("package", 0);
   const [page, setPage] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   useEffect(() => {
@@ -87,15 +91,10 @@ export default function Form() {
             );
           }
         });
-      /*       axios
-        .post("/send-email", formData)
-        .then((response) => console.log(response))
-        .catch((error) => console.log(error));  */
     }
   };
 
   return (
-    /* "handleSubmit" will validate your inputs before invoking "onSubmit" */
     <div className="container">
       {page === 0 && (
         <form
@@ -103,7 +102,6 @@ export default function Form() {
           className="form-inline"
           encType="multipart/form-data"
         >
-          {/* register your input into the hook by invoking the "register" function */}
           <div className="mb-3">
             <label htmlFor="a_nameInput" className="form-label">
               Athlete Name
@@ -146,7 +144,6 @@ export default function Form() {
             />
           </div>
           <div className="mb-3">
-            {/* include validation with required or other standard HTML validation rules */}
             <label htmlFor="p_nameInput" className="form-label">
               Parent Name
             </label>
@@ -154,7 +151,6 @@ export default function Form() {
               className="form-control"
               {...register("parentName", { required: true })}
             />
-            {/* errors will return when field validation fails  */}
             {errors.parentName && (
               <div className="alert alert-danger" role="alert">
                 This field is required
@@ -195,9 +191,8 @@ export default function Form() {
             </label>
             <input
               className="form-control"
-              defaultValue={matchAthleteAddress ? athleteAddress : ""}
               disabled={matchAthleteAddress && true}
-              {...register("parentAddress", { required: true })}
+              {...register("parentAddress", { required: !matchAthleteAddress })}
             />
             {errors.parentAddress && (
               <div className="alert alert-danger" role="alert">
@@ -211,7 +206,15 @@ export default function Form() {
               className="form-check-input"
               id="btncheck1"
               autoComplete="off"
-              {...register("matchAthleteAddress")}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setValue("parentAddress", athleteAddress);
+                  setMatchAthleteAddress(true);
+                } else {
+                  setValue("parentAddress", "");
+                  setMatchAthleteAddress(false);
+                }
+              }}
             />
             <label className="form-check-label" htmlFor="btncheck1">
               Same as athlete
@@ -241,50 +244,13 @@ export default function Form() {
                     type="radio"
                     {...register("package", { required: true })}
                     id={`gridRadios${product.id}`}
-                    value={product.id}
+                    value={products.indexOf(product)}
                   />
                   <label className="form-check-label" htmlFor="gridRadios3">
                     {product.description}
                   </label>
                 </div>
               ))}
-              {/*               <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  {...register("package", { required: true })}
-                  id="gridRadios1"
-                  value="level 1"
-                />
-                <label className="form-check-label" htmlFor="gridRadios1">
-                  Level 1 $295 - Flyer
-                </label>
-              </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  {...register("package", { required: true })}
-                  id="gridRadios2"
-                  value="level 2"
-                />
-                <label className="form-check-label" htmlFor="gridRadios2">
-                  Level 2 $995 - Flyer and One-page Website w/subdomain
-                </label>
-              </div>
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="radio"
-                  {...register("package", { required: true })}
-                  id="gridRadios3"
-                  value="level 3"
-                />
-                <label className="form-check-label" htmlFor="gridRadios3">
-                  Level 3 $1499 - Flyer and One-page Website w/custom domain (+
-                  cost of domain)
-                </label>
-              </div> */}
             </div>
           </fieldset>
           <button type="submit" className="btn btn-primary">
@@ -297,6 +263,49 @@ export default function Form() {
           <div id="page2Help" className="form-text">
             Only fill in information that you want to be included:
           </div>
+          <div className="mb-3">
+            <label htmlFor="ageInput" className="form-label">
+              Age
+            </label>
+            <input
+              className="form-control"
+              id="ageInput"
+              {...register("age")}
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="heightInput" className="form-label">
+              Height
+            </label>
+            <input
+              className="form-control"
+              id="heightInput"
+              {...register("height")}
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="weightInput" className="form-label">
+              Weight
+            </label>
+            <input
+              className="form-control"
+              id="weightInput"
+              {...register("weight")}
+            />
+          </div>
+          <label htmlFor="genderInput" className="form-label">
+            Gender
+          </label>
+          <select
+            className="form-select"
+            id="genderInput"
+            defaultValue={""}
+            {...register("gender")}
+          >
+            <option value={""}></option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
           <div className="mb-3">
             <label htmlFor="highSchoolInput" className="form-label">
               High School Name
