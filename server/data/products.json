@@ -1,0 +1,17 @@
+{
+  "1": {
+    "name": "Level 1",
+    "description": "Level 1 $295 - Flyer",
+    "price": 295.0
+  },
+  "2": {
+    "name": "Level 2",
+    "description": "Level 2 $995 - Flyer and One-page Website w/subdomain",
+    "price": 995.0
+  },
+  "3": {
+    "name": "Level 3",
+    "description": "Level 3 $1499 - Flyer and One-page Website custom domain (+ cost of domain)",
+    "price": 1499.0
+  }
+}
