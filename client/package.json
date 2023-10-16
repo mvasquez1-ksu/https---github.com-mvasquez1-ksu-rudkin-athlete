@@ -2,6 +2,7 @@
   "name": "rudkin-athlete",
   "private": true,
   "version": "0.0.0",
+  "homepage": ".",
   "type": "module",
   "proxy": "http://localhost:4000",
   "scripts": {
